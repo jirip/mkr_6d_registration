@@ -4,7 +4,7 @@ SET(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 SET(CMAKE_DEPENDS_CHECK_CXX
-  "/home/jichy/Documents/MKR/Project/DIFT/main.cpp" "/home/jichy/Documents/MKR/Project/DIFT/build/CMakeFiles/dift.dir/main.cpp.o"
+  "/home/jichy/Documents/MKR/Project/mkr_6d_registration/Program/main.cpp" "/home/jichy/Documents/MKR/Project/mkr_6d_registration/Program/build/CMakeFiles/dift.dir/main.cpp.o"
   )
 SET(CMAKE_CXX_COMPILER_ID "GNU")
 

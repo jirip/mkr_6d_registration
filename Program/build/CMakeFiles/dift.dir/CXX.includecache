@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/jichy/Documents/MKR/Project/DIFT/main.cpp
+/home/jichy/Documents/MKR/Project/mkr_6d_registration/Program/main.cpp
 iostream
 -
 boost/graph/graph_concepts.hpp

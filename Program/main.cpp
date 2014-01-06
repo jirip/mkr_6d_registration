@@ -122,8 +122,9 @@ int main(int argc, char **argv) {
     }*/
     
     // create point cloud only for features
-    PointCloud<PointXYZRGB>::Ptr depth_feat_1 (new PointCloud<PointXYZRGB>);
-    PointCloud<PointXYZRGB>::Ptr depth_feat_2 (new PointCloud<PointXYZRGB>);
+    PointCloud<PointXYZ>::Ptr depth_feat_1 (new PointCloud<PointXYZ>);
+    PointCloud<PointXYZ>::Ptr depth_feat_2 (new PointCloud<PointXYZ>);
+    PointCloud<PointXYZ>::Ptr depth_test (new PointCloud<PointXYZ>);
     
     Mat depth_1, depth_2;
     depth_1 = imread("../data/desk_1_1_depth.png", CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR );
@@ -133,33 +134,24 @@ int main(int argc, char **argv) {
     /*depth_1.convertTo(depth_1, CV_32F);
     depth_2.convertTo(depth_2, CV_32F);*/
     
-    pcl::PointXYZRGB point;
+    pcl::PointXYZ point;
     for (int i = 0; i < good_matches.size(); i++)
     {
       int x,y;
       x = kp1[i].pt.x;
       y = kp1[i].pt.y;
-      uint16_t point_depth = (uint16_t)depth_1.at<uint16_t>(x,y);
-      if (point_depth){
-	point.x = -(float)(x-240)/570.3/1000*point_depth;
-	point.y = (float)(y-320)/570.3/1000*point_depth;
-	point.z = (float)point_depth/1000;
-	point.r = scene_1.data[scene_1.channels()*(scene_1.cols*x + y)+2];
-	point.g = scene_1.data[scene_1.channels()*(scene_1.cols*x + y)+1];
-	point.b = scene_1.data[scene_1.channels()*(scene_1.cols*x + y)+0];
+      uint16_t point_depth1 = (uint16_t)depth_1.at<uint16_t>(x,y);
+      uint16_t point_depth2 = (uint16_t)depth_1.at<uint16_t>(x,y);
+      if (point_depth1 || point_depth2){
+	point.x = -(float)(x-240)/570.3/1000*point_depth1;
+	point.y = (float)(y-320)/570.3/1000*point_depth1;
+	point.z = (float)point_depth1/1000;
 	depth_feat_1->points.push_back(point);
-      }
-      x = kp2[i].pt.x;
-      y = kp2[i].pt.y;
-      point_depth = (uint16_t)depth_2.at<uint16_t>(x,y);
-      if (point_depth){
-	point.x = -(float)(x-240)/570.3/1000*point_depth;
-	point.y = (float)(y-320)/570.3/1000*point_depth;
-	point.z = (float)point_depth/1000;
-	cout << "z2:" << point.z << endl;
-	point.r = scene_2.data[scene_2.channels()*(scene_2.cols*x + y)+2];
-	point.g = scene_2.data[scene_2.channels()*(scene_2.cols*x + y)+1];
-	point.b = scene_2.data[scene_2.channels()*(scene_2.cols*x + y)+0];
+	x = kp2[i].pt.x;
+	y = kp2[i].pt.y;
+	point.x = -(float)(x-240)/570.3/1000*point_depth2;
+	point.y = (float)(y-320)/570.3/1000*point_depth2;
+	point.z = (float)point_depth2/1000;
 	depth_feat_2->points.push_back(point);
       }
     }
@@ -170,24 +162,42 @@ int main(int argc, char **argv) {
     cout << "pocet 2: " << depth_feat_2->width << endl;
     depth_feat_2->height = 1;
     
+    Eigen::Affine3f tr;
+    getTransformation((float)1,(float)2,(float)3,(float)0.5,(float)1.5,(float)-2,tr);
+    //cout << "Transformacni matice: " << tr << endl;
+    transformPointCloud<PointXYZ>(*depth_feat_1, *depth_test, tr);
+    
+    /* Save keypoints clouds */
+    io::savePCDFileBinary ("../data/kp1.pcd", *depth_feat_1);
+    io::savePCDFileBinary ("../data/kp2.pcd", *depth_feat_2);
+    
+    /*visualization::CloudViewer viewer("Cloud Viewer");
+    viewer.showCloud(depth_feat_1);
+    while(!viewer.wasStopped());*/
+    
     /* ICP step */
-    IterativeClosestPoint<PointXYZRGB, PointXYZRGB> icp;
+    IterativeClosestPoint<PointXYZ, PointXYZ> icp;
     icp.setInputSource(depth_feat_1);
     icp.setInputTarget(depth_feat_2);
     
-    PointCloud<PointXYZRGB>::Ptr registered (new PointCloud<PointXYZRGB>);
+    cout << "Epsilon:" << (double)icp.getEuclideanFitnessEpsilon() << endl; 
+    icp.setEuclideanFitnessEpsilon(icp.getEuclideanFitnessEpsilon()/10);
     
-    icp.setMaximumIterations(100);
+    PointCloud<PointXYZ>::Ptr registered (new PointCloud<PointXYZ>);
+    
+    icp.setMaximumIterations(10000);
     
     icp.align(*registered);
-    
     cout << "Pocet final: " << registered->points.size() << endl;
     
     Eigen::Matrix4f transf = icp.getFinalTransformation();
+
+    cout << transf << endl; 
     
-    cout << transf << endl;
-    
-    transformPointCloud<PointX>(); 
+    /* Transform original cloud */
+    PointCloud<PointXYZRGB>::Ptr aligned (new PointCloud<PointXYZRGB>);
+    transformPointCloud<PointXYZRGB>(*cloud1, *aligned, transf);
+    io::savePCDFileBinary ("../data/output.pcd", *aligned);
     
     /*
     visualization::CloudViewer viewer("Cloud Viewer");
@@ -202,8 +212,9 @@ int main(int argc, char **argv) {
     imshow("Image1", img1);
     imshow("Image2", img2);*/
     
+    cout << "ICP Fitness:" << (float)icp.getFitnessScore() << endl;
     cout << "Number of matches:" << (int)good_matches.size() << endl;
-    
+    cout << "Epsilon:" << icp.getEuclideanFitnessEpsilon() << endl; 
     return 0;
 }
 

@@ -47,10 +47,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jichy/Documents/MKR/Project/DIFT
+CMAKE_SOURCE_DIR = /home/jichy/Documents/MKR/Project/mkr_6d_registration/Program
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/jichy/Documents/MKR/Project/DIFT/build
+CMAKE_BINARY_DIR = /home/jichy/Documents/MKR/Project/mkr_6d_registration/Program/build
 
 #=============================================================================
 # Target rules for target CMakeFiles/dift.dir
@@ -59,7 +59,7 @@ CMAKE_BINARY_DIR = /home/jichy/Documents/MKR/Project/DIFT/build
 CMakeFiles/dift.dir/all:
 	$(MAKE) -f CMakeFiles/dift.dir/build.make CMakeFiles/dift.dir/depend
 	$(MAKE) -f CMakeFiles/dift.dir/build.make CMakeFiles/dift.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/jichy/Documents/MKR/Project/DIFT/build/CMakeFiles  1
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/jichy/Documents/MKR/Project/mkr_6d_registration/Program/build/CMakeFiles  1
 	@echo "Built target dift"
 .PHONY : CMakeFiles/dift.dir/all
 
@@ -69,9 +69,9 @@ all: CMakeFiles/dift.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/dift.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/jichy/Documents/MKR/Project/DIFT/build/CMakeFiles 1
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/jichy/Documents/MKR/Project/mkr_6d_registration/Program/build/CMakeFiles 1
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/dift.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/jichy/Documents/MKR/Project/DIFT/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/jichy/Documents/MKR/Project/mkr_6d_registration/Program/build/CMakeFiles 0
 .PHONY : CMakeFiles/dift.dir/rule
 
 # Convenience name for target.

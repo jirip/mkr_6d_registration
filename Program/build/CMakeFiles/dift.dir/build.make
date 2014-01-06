@@ -35,10 +35,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jichy/Documents/MKR/Project/DIFT
+CMAKE_SOURCE_DIR = /home/jichy/Documents/MKR/Project/mkr_6d_registration/Program
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/jichy/Documents/MKR/Project/DIFT/build
+CMAKE_BINARY_DIR = /home/jichy/Documents/MKR/Project/mkr_6d_registration/Program/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/dift.dir/depend.make
@@ -51,17 +51,17 @@ include CMakeFiles/dift.dir/flags.make
 
 CMakeFiles/dift.dir/main.cpp.o: CMakeFiles/dift.dir/flags.make
 CMakeFiles/dift.dir/main.cpp.o: ../main.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/jichy/Documents/MKR/Project/DIFT/build/CMakeFiles $(CMAKE_PROGRESS_1)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/jichy/Documents/MKR/Project/mkr_6d_registration/Program/build/CMakeFiles $(CMAKE_PROGRESS_1)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/dift.dir/main.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/dift.dir/main.cpp.o -c /home/jichy/Documents/MKR/Project/DIFT/main.cpp
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/dift.dir/main.cpp.o -c /home/jichy/Documents/MKR/Project/mkr_6d_registration/Program/main.cpp
 
 CMakeFiles/dift.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/dift.dir/main.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/jichy/Documents/MKR/Project/DIFT/main.cpp > CMakeFiles/dift.dir/main.cpp.i
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/jichy/Documents/MKR/Project/mkr_6d_registration/Program/main.cpp > CMakeFiles/dift.dir/main.cpp.i
 
 CMakeFiles/dift.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/dift.dir/main.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/jichy/Documents/MKR/Project/DIFT/main.cpp -o CMakeFiles/dift.dir/main.cpp.s
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/jichy/Documents/MKR/Project/mkr_6d_registration/Program/main.cpp -o CMakeFiles/dift.dir/main.cpp.s
 
 CMakeFiles/dift.dir/main.cpp.o.requires:
 .PHONY : CMakeFiles/dift.dir/main.cpp.o.requires
@@ -253,6 +253,6 @@ CMakeFiles/dift.dir/clean:
 .PHONY : CMakeFiles/dift.dir/clean
 
 CMakeFiles/dift.dir/depend:
-	cd /home/jichy/Documents/MKR/Project/DIFT/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jichy/Documents/MKR/Project/DIFT /home/jichy/Documents/MKR/Project/DIFT /home/jichy/Documents/MKR/Project/DIFT/build /home/jichy/Documents/MKR/Project/DIFT/build /home/jichy/Documents/MKR/Project/DIFT/build/CMakeFiles/dift.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/jichy/Documents/MKR/Project/mkr_6d_registration/Program/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jichy/Documents/MKR/Project/mkr_6d_registration/Program /home/jichy/Documents/MKR/Project/mkr_6d_registration/Program /home/jichy/Documents/MKR/Project/mkr_6d_registration/Program/build /home/jichy/Documents/MKR/Project/mkr_6d_registration/Program/build /home/jichy/Documents/MKR/Project/mkr_6d_registration/Program/build/CMakeFiles/dift.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/dift.dir/depend
 
