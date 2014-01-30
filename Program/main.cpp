@@ -11,31 +11,47 @@
 #include <opencv2/highgui/highgui_c.h> 
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/nonfree/nonfree.hpp>
+#include <ctime>
 
 /* Values for converting RGB and Depth values to XYZ PointCloud */
 #define CAM_CALIB   570.3
 #define DATA_SCALE  1000
 
 /* Setting of choosing good mathces */
-#define MIN_MULTIPLE  5
+#define MIN_MULTIPLE  10
 
-/*  */
+/* Point type for ICP */
 #define ICP_POINT_TYPE  PointXYZ
 
 using namespace cv;
 using namespace std;
 using namespace pcl;
 
+void register_clouds(int scan1, int scan2);
+void joint_pcds(int num1, int num2);
 void print_match(DMatch match);
 void print_keypoint(KeyPoint kpoint);
 void nearest_keypoints_xy(vector<KeyPoint> & kpoints);
 
 int main(int argc, char **argv) {
   
+  /* Register 2 consecutive scans together in loop */
+    for (int i = 1; i < 10; i++) {
+      register_clouds(i,i+1);
+    }
+    
+    cout << "Registration finished." << endl;
+    
+    return 0;
+}
+
+void register_clouds(int scan1, int scan2) {
+  
+    static int runned = 0;
     /* Load RGB images of scan 1 and scan 2*/
-    cv::Mat scene_1, scene_2; // images to load
-    scene_1 = imread("../data/desk_1_1.png", CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
-    scene_2 = imread("../data/desk_1_2.png", CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
+    Mat scene_1, scene_2; // images to load
+    scene_1 = imread(format("../data/desk_1_%d.png",scan1), CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
+    scene_2 = imread(format("../data/desk_1_%d.png",scan2), CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
     
     /* parameters for SIFT detector */
     int nfeatures = 0;
@@ -56,7 +72,7 @@ int main(int argc, char **argv) {
     extractor.compute( scene_1, keypoints_1, descriptors_1);
     extractor.compute( scene_2, keypoints_2, descriptors_2);
     
-    /* Matching descriptor vector using FLANN matcher */
+    /* Matching descriptor vector using FLANN (Fast Library for Aproximate Nearest Neighbor) matcher */
     FlannBasedMatcher matcher;
     vector<DMatch> matches;
     matcher.match( descriptors_1, descriptors_2, matches);
@@ -97,19 +113,13 @@ int main(int argc, char **argv) {
     float similarity = (float)good_matches.size()/(0.5*(keypoints_1.size()+keypoints_2.size()));
     cout << "Similarity: " << similarity << endl;
     
-    /* Draw good matches */
-    Mat img_matches, img_keypoints;
+    /* Draw good matches (DEBUG)*/
+    /*Mat img_matches, img_keypoints;
     drawMatches( scene_1, keypoints_1, scene_2, keypoints_2, good_matches,
 		 img_matches, Scalar::all(-1), Scalar::all(-1),
 		 vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
     namedWindow("Good matches", CV_WINDOW_AUTOSIZE | CV_GUI_EXPANDED);
-    imshow ("Good matches", img_matches);
-    
-    /* load full scene clouds data */
-    PointCloud<PointXYZRGB>::Ptr cloud1 (new PointCloud<PointXYZRGB>);
-    PointCloud<PointXYZRGB>::Ptr cloud2 (new PointCloud<PointXYZRGB>);
-    io::loadPCDFile("../data/desk_1_1.pcd", *cloud1);
-    io::loadPCDFile("../data/desk_1_2.pcd", *cloud2);
+    imshow ("Good matches", img_matches);*/
     
     /* Keypoints with rounded x y coordinates */
     vector<KeyPoint> kp1,kp2;
@@ -122,25 +132,22 @@ int main(int argc, char **argv) {
     nearest_keypoints_xy(kp1);
     nearest_keypoints_xy(kp2);
     
-    drawKeypoints(scene_1, kp1, img_keypoints, Scalar::all(-1), DrawMatchesFlags::DEFAULT);
-    imshow ("Keypoints 1", img_keypoints);
-    
     /* create point cloud only for matching features */
     PointCloud<PointXYZ>::Ptr depth_feat_1 (new PointCloud<PointXYZ>);
     PointCloud<PointXYZ>::Ptr depth_feat_2 (new PointCloud<PointXYZ>);
-    PointCloud<PointXYZ>::Ptr depth_test (new PointCloud<PointXYZ>);
+    //DEBUG PointCloud<PointXYZ>::Ptr depth_test (new PointCloud<PointXYZ>);
     
     /* Load depth data for scenes */
     Mat depth_1, depth_2;
-    depth_1 = imread("../data/desk_1_1_depth.png", CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR );
-    depth_2 = imread("../data/desk_1_2_depth.png", CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR );
+    depth_1 = imread(format("../data/desk_1_%d_depth.png",scan1), CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR );
+    depth_2 = imread(format("../data/desk_1_%d_depth.png",scan2), CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR );
     
     int rows_half = depth_1.rows/2;
     int cols_half = depth_1.cols/2;
     
     pcl::PointXYZ point1;
     pcl::PointXYZ point2;
-    pcl::PointXYZ point;
+    /*pcl::PointXYZ point; //DEBUG
     float d; // debugging
     for (int i = 0; i < depth_1.rows; i++)
     {
@@ -155,7 +162,7 @@ int main(int argc, char **argv) {
 	}
       }
     }
-    io::savePCDFileASCII ("../data/depth1.pcd", *depth_test);
+    io::savePCDFileASCII ("../data/depth1.pcd", *depth_test);*/
     /*
     visualization::CloudViewer viewer("Cloud Viewer");
     viewer.showCloud(depth_test);
@@ -171,7 +178,7 @@ int main(int argc, char **argv) {
       y2 = kp2[i].pt.y;
       float point_depth1 = (float)depth_1.at<uint16_t>(y1,x1);     
       float point_depth2 = (float)depth_2.at<uint16_t>(y2,x2);
-      /*
+      /* //DEBUG
       if ((point_depth1 != 0) && (point_depth2 != 0)) {
 	// Add point to depth_feat_1 cloud
 	point1.x = -(float)(x1-rows_half)/CAM_CALIB/DATA_SCALE*point_depth1;
@@ -191,8 +198,8 @@ int main(int argc, char **argv) {
 	point1.y = (float)(y1-rows_half)/CAM_CALIB/DATA_SCALE*point_depth1;
 	point1.z = (float)point_depth1/DATA_SCALE;
 	depth_feat_1->points.push_back(point1);
-	cout << "x, y, depth: " << x1 << ", " << y1 << ", " << point_depth1 << endl;
-	cout << "Point1: " << point1 << endl;
+	//cout << "x, y, depth: " << x1 << ", " << y1 << ", " << point_depth1 << endl;
+	//cout << "Point1: " << point1 << endl;
       }
       if (point_depth2 != 0) {
 	// Add point to depth_feat_2 cloud 
@@ -213,7 +220,7 @@ int main(int argc, char **argv) {
     
    
     /* Testovani funkce ICP*/
-    /*
+    /* //DEBUG
     Eigen::Affine3f tr;
     getTransformation((float)1,(float)2,(float)3,(float)0.5,(float)1.5,(float)-2,tr);
     //cout << "Transformacni matice: " << tr << endl;
@@ -224,9 +231,18 @@ int main(int argc, char **argv) {
     io::savePCDFileASCII ("../data/kp1.pcd", *depth_feat_1);
     io::savePCDFileASCII ("../data/kp2.pcd", *depth_feat_2);
     
+    //DEBUG
     /*visualization::CloudViewer viewer("Cloud Viewer");
     viewer.showCloud(depth_feat_1);
     while(!viewer.wasStopped());*/
+    
+    PointCloud<PointXYZRGB>::Ptr cloud1 (new PointCloud<PointXYZRGB>);
+    PointCloud<PointXYZRGB>::Ptr cloud2 (new PointCloud<PointXYZRGB>);
+    if(!runned)
+      io::loadPCDFile(format("../data/desk_1_%d.pcd",scan1), *cloud1);
+    else
+      io::loadPCDFile("../data/output.pcd", *cloud1);
+    io::loadPCDFile(format("../data/desk_1_%d.pcd",scan2), *cloud2);
     
     /* ICP step */
     IterativeClosestPoint<ICP_POINT_TYPE, ICP_POINT_TYPE> icp;
@@ -241,17 +257,29 @@ int main(int argc, char **argv) {
     
     PointCloud<ICP_POINT_TYPE>::Ptr aligned (new PointCloud<ICP_POINT_TYPE>);
     
+    clock_t begin = clock();
+    
     icp.align(*aligned);
     
+    clock_t end = clock();
+    double elapsed_secs = double(end - begin)/double(CLOCKS_PER_SEC);
+    cout << "Cas: " << elapsed_secs << endl;
+    
     Eigen::Matrix4f transf = icp.getFinalTransformation();
+    
+    //DEBUG
+    /* load full scene clouds data */
+    //PointCloud<PointXYZRGB>::Ptr cloud1 (new PointCloud<PointXYZRGB>);
+    //io::loadPCDFile(format("../data/desk_1_%d.pcd",123456789), *cloud1);
     
     /* Transform original cloud */
     PointCloud<PointXYZRGB>::Ptr transformed (new PointCloud<PointXYZRGB>);
     transformPointCloud<PointXYZRGB>(*cloud1, *transformed, transf);
+    *transformed += *cloud2;
     io::savePCDFileBinary ("../data/output.pcd", *transformed);
-    io::savePCDFileBinary ("../data/reg.pcd", *aligned);
+    //io::savePCDFileBinary ("../data/reg.pcd", *aligned);
     
-    /*
+    /* //DEBUG
     visualization::CloudViewer viewer("Cloud Viewer");
     viewer.showCloud(cloud1);
     viewer.showCloud(cloud2);
@@ -267,8 +295,25 @@ int main(int argc, char **argv) {
     cout << transf << endl;
     cout << "ICP Fitness: " << icp.getFitnessScore() << endl;
     
-    waitKey(0);
-    return 0;
+    //DEBUG
+    /*joint_pcds(1,scan2);/*
+    joint_pcds(34,5);
+    joint_pcds(56,7);
+    joint_pcds(78,9);
+    joint_pcds(9,10);*/
+    runned++;
+    //waitKey(0);
+}
+
+void joint_pcds(int num1, int num2)
+{
+  PointCloud<PointXYZRGB>::Ptr cloud1 (new PointCloud<PointXYZRGB>);
+  PointCloud<PointXYZRGB>::Ptr cloud2 (new PointCloud<PointXYZRGB>);
+  io::loadPCDFile("../data/output.pcd", *cloud1);
+  io::loadPCDFile(format("../data/desk_1_%d.pcd",num2), *cloud2);
+  PointCloud<PointXYZRGB>::Ptr result (new PointCloud<PointXYZRGB>);
+  *result = *cloud1 + *cloud2;
+  io::savePCDFileASCII(format("../data/desk_1_%d%d.pcd",num1,num2), *result);
 }
 
 void print_match(DMatch match)
